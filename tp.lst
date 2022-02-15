@@ -1,0 +1,816 @@
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001                         #INCLUDE<P16F628.INC>
+                      00001         LIST
+                      00002 ; P16F628.INC  Standard Header File, Version 1.01    Microchip Technology, Inc.
+Message[301]: MESSAGE: (Processor-header file mismatch.  Verify selected processor.)
+                      00261         LIST
+2007   3F10           00002                 __CONFIG 3F10
+                      00003                 
+                      00004 ;DECLARACION DE ESPACIOS DE MEMORIA A USAR              
+                      00005                 CBLOCK  0X20
+  00000020            00006                 D1
+  00000021            00007                 D2
+  00000022            00008                 D3
+  00000023            00009                 D4
+  00000024            00010                 AUX_W
+  00000025            00011                 AUX_STATUS
+  00000026            00012                 CONT_AR 
+  00000027            00013                 CONT_AR_2
+  00000028            00014         D1_AUX
+  00000029            00015         D2_AUX
+  0000002A            00016         D3_AUX
+  0000002B            00017         D4_AUX
+  0000002C            00018         CONT_CALC
+                      00019                 ENDC            
+                      00020 
+                      00021 ;DECLARACION DE CONSTATNES
+                      00022 #DEFINE BTN_G1  PORTA,6
+                      00023 #DEFINE BTN_G2  PORTA,7
+                      00024 #DEFINE BTN_R   PORTA,4
+                      00025 #DEFINE BTN_M   PORTB,0
+                      00026 
+                      00027 #DEFINE PIN_D1  3
+                      00028 #DEFINE PIN_D2  2
+                      00029 #DEFINE PIN_D3  1
+                      00030 #DEFINE PIN_D4  0
+                      00031 
+                      00032 #DEFINE CTRL_DISPLAY    PORTA
+                      00033 #DEFINE APAGAR_DISPLAYS CLRF    PORTA
+                      00034 
+                      00035 ;DECLARACION DE MACROS
+                      00036 ;MACRO MOSTRAR MUESTRA LOS VALORES DE CADA UNIDAD
+                      00037 MOSTRAR MACRO    DIGITO,PIN
+                      00038                 APAGAR_DISPLAYS
+                      00039                 MOVF    DIGITO,W
+                      00040                 CALL    TAB_DISPLAY
+                      00041                 MOVWF   PORTB
+                      00042                 BSF             CTRL_DISPLAY,PIN
+                      00043                 ENDM
+                      00044 ;MACRO VERIFICAR: HACE EL CALCULO PARA SABER SI EL NUMERO ES MAYOR A 10 O MENOR
+                      00045 VERIFICAR MACRO DIGITO,DIGITO_AUX
+                      00046           
+                      00047          MOVF     DIGITO_AUX,0         ;MOVEMOS EL AUXILIAR A LA ESTACION DE TRABAJO
+                      00048          ADDWF    DIGITO,1             ;SE LO SUMAMOS AL DIGITO ENCARGADO DE MOSTRAR EL NUMERO
+                      00049          MOVLW    .10                  ;MOVEMOS UN 10 A LA ESTACION DE TRABAJO
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00050          SUBWF    DIGITO,1             ;RESTAMOS EL VALOR DEL DIGITO-(10)
+                      00051          ENDM                          ;FIN MACRO
+                      00052 
+                      00053 ;MACRO PARA SUMAR LOS NUMEROS CONTIENE VARIOS CALL CREEMOS QUE ES INEFICIENTE PERO ASI SALIO
+                      00054          
+                      00055 SUMAR   MACRO   
+                      00056                ;IR A LOS CALL PARA VER COMO SE MANIPULAN LOS DATOS
+                      00057                        CALL SUMAR_3           ;1-AUMENTA 1,SI EL DIGITO LLEGA A 10 Z SE LEVANTA
+                      00058                BTFSS STATUS,Z         ;2-SI Z SE LEVANTA HACE LA SUMA DEL SIGUIENTE DIGITO 
+                      00059                GOTO RETORNO_0         ;3-SI NO SE LEVANTA SALTA AL FINAL DE LA MACRO
+                      00060                BCF STATUS,Z           ;4-PARA HACER LA SUMA DEL OTRO DIGITO RESETEAMOS LA BANDERA Z
+                      00061                CALL SUMAR_4           ;SE REPITE EL PROCESO DEL 1 AL 4
+                      00062                BTFSS STATUS,Z
+                      00063                GOTO RETORNO_0
+                      00064                BCF STATUS,Z
+                      00065                CALL SUMAR_2
+                      00066                BTFSS STATUS,Z
+                      00067                GOTO RETORNO_0
+                      00068                BCF STATUS,Z
+                      00069                CALL SUMAR_1
+                      00070                BCF STATUS,Z
+                      00071           
+                      00072 RETORNO_0                             ;ETIQUETA RETORNO_0 SI EL DIGITO NO LLEGA A 10 SALTA ACA
+                      00073                 ENDM                      ;FIN MACRO
+                      00074 
+                      00075 
+                      00076 ;MACRO PARA DECREMENTAR EL DIGITO
+                      00077 DECRECER        MACRO                 ;COMIENZO MACRO
+                      00078                ;IR A LOS CALL PARA VER COMO SE MANIPULAN LOS DATOS
+                      00079                CALL RESTAR_3          ;1-DECRECEMOS EL DIGITO SI LLEGA A -1 Y LE SUMAMOS 1 Z SE LEVANTA
+                      00080                BTFSS STATUS,Z         ;2-PREGUNTAMOS SI LA BANDERA SE LEVANTO PARA SABER SI EL DIGITO LL
+                            EGO A 0
+                      00081                GOTO RETORNO_1         ;3-SI Z NO SE LEVANTA SALTAMOS AL FINAL DE LA MACRO, HACIA LA ETIQ
+                            UETA RETORNO_1
+                      00082                CALL RESTAR_4          ;SE REPITE EL PROCESO DEL 1 AL 3
+                      00083                BTFSS STATUS,Z
+                      00084                GOTO RETORNO_1
+                      00085                BCF STATUS,Z
+                      00086                CALL RESTAR_2
+                      00087                BTFSS STATUS,Z
+                      00088                GOTO RETORNO_1
+                      00089                BCF STATUS,Z
+                      00090                CALL RESTAR_1
+                      00091                BCF STATUS,Z
+                      00092                BCF STATUS,Z
+                      00093               
+                      00094 RETORNO_1                             ;ETIQUETA RETORNO_1 SI EL DIGITO ANALIZADO EN ESE MOMENTO AL SUMAR
+                            LE 1 NO LLEGA A 0 SALTA HACIA ACA 
+                      00095                 ENDM                      ;FIN MACRO
+                      00096 
+                      00097 
+                      00098 ;INICIO DEL PROGRAMA            
+                      00099                 
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00100                 ORG             0X00
+0000   2???           00101                 GOTO    CONFI
+                      00102                 ORG             0X04            
+                      00103 
+                      00104 ;RUTINA DE INTERRUPCION
+                      00105 ;DESBORDA EL TIMER CADA 5ms
+                      00106 ;MUESTRA TODOS LOS DIGITOS DE ACUERDO A LAS VARIABLES D1:4
+                      00107 
+                      00108 ;GUARDA STATUS Y W EN VARIABLES AUXILIARES
+0004   110B           00109                 BCF             INTCON,T0IF
+0005   138B           00110                 BCF             INTCON,GIE              
+0006   00A4           00111                 MOVWF   AUX_W
+0007   3003           00112                 MOVLW   STATUS
+0008   00A5           00113                 MOVWF   AUX_STATUS
+                      00114 ;MULTIPLEXADO DE DISPLAYS
+0009   1985           00115                 BTFSC   CTRL_DISPLAY,PIN_D1
+000A   2???           00116                 GOTO    MOSTRAR_D2                      
+000B   1905           00117                 BTFSC   CTRL_DISPLAY,PIN_D2
+000C   2???           00118                 GOTO    MOSTRAR_D3
+000D   1885           00119                 BTFSC   CTRL_DISPLAY,PIN_D3
+000E   2???           00120                 GOTO    MOSTRAR_D4
+                      00121 ;MUESTRA LOS VALORES DE LOS PINS CORRESPONDIENTES               
+                      00122         MOSTRAR D1,PIN_D1
+000F   0185               M                 APAGAR_DISPLAYS
+0010   0820               M                 MOVF    D1,W
+0011   2???               M                 CALL    TAB_DISPLAY
+0012   0086               M                 MOVWF   PORTB
+0013   1585               M                 BSF             CTRL_DISPLAY,3
+0014   2???           00123                 GOTO    FIN_T0I
+                      00124 
+0015                  00125 MOSTRAR_D2
+                      00126                 MOSTRAR D2,PIN_D2
+0015   0185               M                 APAGAR_DISPLAYS
+0016   0821               M                 MOVF    D2,W
+0017   2???               M                 CALL    TAB_DISPLAY
+0018   0086               M                 MOVWF   PORTB
+0019   1505               M                 BSF             CTRL_DISPLAY,2
+001A   2???           00127                 GOTO    FIN_T0I
+                      00128 
+001B                  00129 MOSTRAR_D3
+                      00130                 MOSTRAR D3,PIN_D3
+001B   0185               M                 APAGAR_DISPLAYS
+001C   0822               M                 MOVF    D3,W
+001D   2???               M                 CALL    TAB_DISPLAY
+001E   0086               M                 MOVWF   PORTB
+001F   1485               M                 BSF             CTRL_DISPLAY,1
+0020   2???           00131                 GOTO    FIN_T0I
+                      00132 
+0021                  00133 MOSTRAR_D4
+                      00134                 MOSTRAR D4,PIN_D4
+0021   0185               M                 APAGAR_DISPLAYS
+0022   0823               M                 MOVF    D4,W
+0023   2???               M                 CALL    TAB_DISPLAY
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0024   0086               M                 MOVWF   PORTB
+0025   1405               M                 BSF             CTRL_DISPLAY,0
+                      00135                 
+0026                  00136 FIN_T0I ;FINAL DE LA INTERRUPCION
+                      00137 ;REINICIA TIMER Y RECUPERA STATUS Y W
+0026   30EC           00138                 MOVLW   .236
+0027   0081           00139                 MOVWF   TMR0
+0028   0825           00140                 MOVF    AUX_STATUS,W
+0029   0083           00141                 MOVWF   STATUS
+002A   0824           00142                 MOVF    AUX_W,W
+002B   0009           00143                 RETFIE
+                      00144 
+                      00145 ;CONFIGURACION
+                      00146                 
+002C                  00147 CONFI
+002C   3007           00148                 MOVLW   0X07
+002D   009F           00149                 MOVWF   CMCON; CMCON SE TIENE QUE ESTABLECER EN 7 PARA USAR TODO EL PORTA
+002E   30EC           00150                 MOVLW   .236
+002F   0081           00151                 MOVWF   TMR0
+0030   1683           00152                 BSF             STATUS,RP0
+0031   3001           00153                 MOVLW   b'00000001'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0032   0086           00154                 MOVWF   TRISB   
+0033   30F0           00155                 MOVLW   b'11110000'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0034   0085           00156                 MOVWF   TRISA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0035   1281           00157                 BCF             OPTION_REG,T0CS
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0036   1181           00158                 BCF             OPTION_REG,PSA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0037   1401           00159                 BSF             OPTION_REG,PS0
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0038   1481           00160                 BSF             OPTION_REG,PS1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0039   1501           00161                 BSF             OPTION_REG,PS2
+003A   178B           00162                 BSF             INTCON,GIE
+003B   168B           00163                 BSF             INTCON,T0IE
+003C   1283           00164                 BCF             STATUS,RP0
+                      00165 
+                      00166 ;RUTINA PRINCIPAL
+                      00167 ;INCREMENTA DE 0 A 9 CADA DIGITO DEPENDIENDO QUE BOT?N SE TOCA.
+003D   01AC           00168         CLRF    CONT_CALC       
+003E   01A8           00169         CLRF    D1_AUX          ;LIMPIAMOS TODAS LAS VARIABLES
+003F   01A9           00170                 CLRF    D2_AUX
+0040   01AA           00171                 CLRF    D3_AUX
+0041   01AB           00172                 CLRF    D4_AUX
+0042   3002           00173         MOVLW   .2              ;MOVEMOS UN 2 A LA ESTACION A LA ESTACION DE TRABAJO PARA MOVERLO A LA V
+                            ARIABLE CONT_CALC
+0043   00AC           00174         MOVWF   CONT_CALC       ;CONTADOR SI LLEGA A 0 SALTAMOS LA INSTRUCCION //VER BOTONES PARA VER SU
+                             MANIPULACION
+0044                  00175 REINICIO                        
+                      00176         ;SI QUEREMOS REINICIAR LOS NUMEROS EL PROGRAMA VIENE HACIA ACA
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0044   0185           00177                 CLRF    PORTA           ;LIMPIEZA DE TODAS LAS VARIABLES PARA QUE ESTEN A 0
+0045   0186           00178                 CLRF    PORTB
+0046   01A0           00179                 CLRF    D1              ;MILESIMA
+0047   01A1           00180                 CLRF    D2              ;CENTENA
+0048   01A2           00181                 CLRF    D3              ;UNIDAD
+0049   01A3           00182                 CLRF    D4              ;DECENA
+                      00183 
+004A                  00184 BOTONES                         ;----------------------------------------------------------------------|
+                            >BTN_G1
+                      00185                                 ;BOTON PARA INCREMENTAR                                          
+004A   1B05           00186                 BTFSC   BTN_G1          ;SI LO PRECIONARON ENTRA POR ACA PARA GENERAR LA DEMORA
+004B   1B05           00187         BTFSC   BTN_G1          ;LUEGO ENTRA A LA MACRO DEMORA
+004C   2???           00188                 CALL    DEMORA_AR       ;MACRO SUMAR AUMENTA LOS DIGITOS UNA VEZ POR UNIDAD LOS DIGITOS
+004D   1B05           00189                 BTFSC   BTN_G1          ;---------------------------------------------------------------
+                            -------|>BTN_G2
+                      00190                 SUMAR                   ;BOTON PARA DECRECER                                            
+                             
+                          M                ;IR A LOS CALL PARA VER COMO SE MANIPULAN LOS DATOS
+004E   2???               M                        CALL SUMAR_3           ;1-AUMENTA 1,SI EL DIGITO LLEGA A 10 Z SE LEVANTA
+004F   1D03               M                BTFSS STATUS,Z         ;2-SI Z SE LEVANTA HACE LA SUMA DEL SIGUIENTE DIGITO 
+0050   2???               M                GOTO RETORNO_0         ;3-SI NO SE LEVANTA SALTA AL FINAL DE LA MACRO
+0051   1103               M                BCF STATUS,Z           ;4-PARA HACER LA SUMA DEL OTRO DIGITO RESETEAMOS LA BANDERA Z
+0052   2???               M                CALL SUMAR_4           ;SE REPITE EL PROCESO DEL 1 AL 4
+0053   1D03               M                BTFSS STATUS,Z
+0054   2???               M                GOTO RETORNO_0
+0055   1103               M                BCF STATUS,Z
+0056   2???               M                CALL SUMAR_2
+0057   1D03               M                BTFSS STATUS,Z
+0058   2???               M                GOTO RETORNO_0
+0059   1103               M                BCF STATUS,Z
+005A   2???               M                CALL SUMAR_1
+005B   1103               M                BCF STATUS,Z
+                          M           
+005C                      M RETORNO_0                             ;ETIQUETA RETORNO_0 SI EL DIGITO NO LLEGA A 10 SALTA ACA
+005C   1B85           00191         BTFSC   BTN_G2          ;GENERAMOS LA DEMORA Y PASAMOS A DECRECER
+005D   2???           00192         CALL    DEMORA_AR       ;ENTRA A LA MACRO DECRECER PARA DECRECER
+005E   1B85           00193         BTFSC   BTN_G2          ;----------------------------------------------------------------------|
+                            >BTN_R
+                      00194         DECRECER                ;BOTON PARA REINICIAR LOS NUMEROS                                
+                          M                ;IR A LOS CALL PARA VER COMO SE MANIPULAN LOS DATOS
+005F   2???               M                CALL RESTAR_3          ;1-DECRECEMOS EL DIGITO SI LLEGA A -1 Y LE SUMAMOS 1 Z SE LEVANTA
+0060   1D03               M                BTFSS STATUS,Z         ;2-PREGUNTAMOS SI LA BANDERA SE LEVANTO PARA SABER SI EL DIGITO LL
+                            EGO A 0
+0061   2???               M                GOTO RETORNO_1         ;3-SI Z NO SE LEVANTA SALTAMOS AL FINAL DE LA MACRO, HACIA LA ETIQ
+                            UETA RETORNO_1
+0062   2???               M                CALL RESTAR_4          ;SE REPITE EL PROCESO DEL 1 AL 3
+0063   1D03               M                BTFSS STATUS,Z
+0064   2???               M                GOTO RETORNO_1
+0065   1103               M                BCF STATUS,Z
+0066   2???               M                CALL RESTAR_2
+0067   1D03               M                BTFSS STATUS,Z
+0068   2???               M                GOTO RETORNO_1
+0069   1103               M                BCF STATUS,Z
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+006A   2???               M                CALL RESTAR_1
+006B   1103               M                BCF STATUS,Z
+006C   1103               M                BCF STATUS,Z
+                          M               
+006D                      M RETORNO_1                             ;ETIQUETA RETORNO_1 SI EL DIGITO ANALIZADO EN ESE MOMENTO AL SUMAR
+                            LE 1 NO LLEGA A 0 SALTA HACIA ACA 
+006D   1A05           00195         BTFSC   BTN_R           ;BUSCA LA ETIQUETA REINICIO PARA LIMPIAR TODAS LAS VARIABLES
+006E   2???           00196         GOTO    REINICIO        ;----------------------------------------------------------------------|
+                            >BTN_M
+006F   1806           00197         BTFSC   BTN_M           ;GUARDA VARIABLES Y LUEGO HACE LA SUMA                            
+Message[305]: Using default destination of 1 (file).
+0070   0BAC           00198         DECFSZ  CONT_CALC       ;REDUCIMOS EL CONTADOR CONT_CALC=2 EN UNIDA UNIDAD, QUEREMOS QUE GUARDE 
+0071   2???           00199         GOTO    SALTO           ;LAS VARIABLES EN VARIABLES AUXILIARES AHORA CONT_CALC=1
+0072   2???           00200         GOTO    CONDICIONAL     ;SI EL CONTADOR LLEGA A 0 AL APRETARLO DOS VECES HACE UN SALTO
+0073   1806           00201 SALTO   BTFSC   BTN_M           ;GENERAMOS UNA PEQUEÑA DEMORA
+0074   2???           00202         CALL    CARGAR_AUX      ;GENERAMOS UNA LLAMADA PARA HACER LA SUMA
+0075   2???           00203                 GOTO    BOTONES         ;AL FINAL UNA VEZ HECHA LA SUMA REINICIAMOS EL CONTADOR AL VALOR
+                             
+                      00204                                 ;ORIGINAL EN ESTE CASO TENIA UN 2
+0076                  00205 CONDICIONAL                     ;-----------------------------------------------------------------------
+0076   2???           00206         CALL    DEMORA_AR
+0077   2???           00207         CALL    CALCULO_1
+0078   3002           00208         MOVLW   .2
+0079   00AC           00209         MOVWF   CONT_CALC
+007A   2???           00210         GOTO    BOTONES
+                      00211         
+                      00212 
+                      00213 ;LLAMADA QUE HACE LA DEMORA
+007B                  00214 DEMORA_AR
+007B   30FF           00215                 MOVLW   .255
+007C   00A6           00216                 MOVWF   CONT_AR
+007D                  00217 LOOP_AR
+007D   30FF           00218                 MOVLW   .255
+007E   00A7           00219                 MOVWF   CONT_AR_2
+007F                  00220 LOOP_AR_2
+007F   0BA7           00221                 DECFSZ  CONT_AR_2,1
+0080   2???           00222                 GOTO    LOOP_AR_2
+0081   0BA6           00223                 DECFSZ  CONT_AR,1
+0082   2???           00224                 GOTO    LOOP_AR
+0083   0008           00225                 RETURN
+                      00226 ; LLAMADAS DE LAS SUBRUTINAS Y TODAS FUNCIONAN IGUAL
+0084                  00227 SUMAR_1        
+0084   0AA0           00228         INCF    D1,1             ;INCREMENTAMOS EL DIGITO Y LO GUARDAMOS EN SU DIRRECION ACTUAL
+0085   0820           00229                 MOVF    D1,W             ;AHORA LO MOVEMOS EN LA ESTACION DE TRABAJO AMBAS CONSERVAN EL 
+                            MISMO VALOR 
+0086   3A0A           00230                 XORLW   .10              ;SI EL DIGITO QUE AUMENTAMOS LLEGA A 10 LO ANALIZAMOS EN LA EST
+                            ACION DE TRABAJO
+0087   1903           00231                 BTFSC   STATUS,Z         ;SI CONTIENE 10 LA VARIABLE, XORLW LEVANTA FLAG Z Y PODEMOS PRO
+                            CEDER A LIMPIAR EL DIGITO
+0088   01A0           00232                 CLRF    D1               ;SI NO ES ASI SIMPLEMENTE TERMINA LA SUBRUTINA
+                      00233 
+0089   0008           00234         RETURN                   ;FIN SUBRUTINA //TODOS LOS SUMAR FUNCIONAN DE LA MISMA MANERA
+                      00235 
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+008A                  00236 SUMAR_2        
+008A   0AA1           00237         INCF    D2,1
+008B   0821           00238                 MOVF    D2,W
+008C   3A0A           00239                 XORLW   .10
+008D   1903           00240                 BTFSC   STATUS,Z
+008E   01A1           00241                 CLRF    D2
+                      00242 
+008F   0008           00243         RETURN
+                      00244 
+0090                  00245 SUMAR_3        
+0090   0AA2           00246         INCF    D3,1
+0091   0822           00247                 MOVF    D3,W
+0092   3A0A           00248                 XORLW   .10
+0093   1903           00249                 BTFSC   STATUS,Z
+0094   01A2           00250                 CLRF    D3
+                      00251 
+0095   0008           00252         RETURN
+                      00253 
+                      00254 
+0096                  00255 SUMAR_4        
+0096   0AA3           00256         INCF    D4,1
+0097   0823           00257                 MOVF    D4,W
+0098   3A0A           00258                 XORLW   .10
+0099   1903           00259                 BTFSC   STATUS,Z
+009A   01A3           00260                 CLRF    D4
+                      00261 
+009B   0008           00262         RETURN
+                      00263 ;SUBRUTINAS QUE RESTAN EL DIGITO CORRESPONDIENTE ENTRA EN FUNCION CON LA MACRO DECRECER //TODOS LOS REST
+                            AR FUNCIONAN IGUAL
+009C                  00264 RESTAR_1        
+009C   03A0           00265         DECF    D1,1              ;RESTAMOS 1 AL DIGITO
+009D   0820           00266         MOVF    D1,0              ;LO MOVEMOS A LA ESTACION DE TRABAJO Y SI HAY UN -1
+009E   3E01           00267         ADDLW   .1                ;EN LA ESTACION AL SUMARLE UN 1 SE PRODUCE ACARREO 
+009F   1C03           00268                 BTFSS   STATUS,C          ;FLAG C SE LEVANTA Y HACEMOS SALTO CONDICIONAL,PERO SI NO HAY 
+                            UN -1 TERMINA LA RUTINA
+00A0   0008           00269         RETURN                   
+00A1   01A1           00270         CLRF    D2                ;LIMPIAMOS EL DIGITO QUE HABIA LLEGADO A -1
+00A2   3009           00271                 MOVLW  .9                 ;Y MOVEMOS UN LITERAL A LA ESTACION EN ESTE CASO UN 9
+Message[305]: Using default destination of 1 (file).
+00A3   07A0           00272         ADDWF D1                  ;Y SE LO SUMAMOS AL DIGITO
+00A4   1503           00273         BSF STATUS,Z              ;PONEMOS A 1 EL FLAG Z PARA QUE DESCRESCA LOS DEMAS NUMEROS
+00A5   0008           00274         RETURN                    ;FIN SUBRUTINA
+                      00275 
+00A6                  00276 RESTAR_2        
+00A6   03A1           00277         DECF    D2,1
+00A7   0821           00278         MOVF    D2,0
+00A8   3E01           00279         ADDLW   .1
+00A9   1C03           00280                 BTFSS   STATUS,C
+00AA   0008           00281         RETURN
+00AB   01A1           00282         CLRF    D2
+00AC   3009           00283                 MOVLW  .9
+Message[305]: Using default destination of 1 (file).
+00AD   07A1           00284         ADDWF D2
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00AE   1503           00285         BSF STATUS,Z
+                      00286 
+00AF                  00287 RESTAR_3        
+00AF   03A2           00288         DECF    D3,1
+00B0   0822           00289         MOVF    D3,0
+00B1   3E01           00290         ADDLW   .1
+00B2   1C03           00291                 BTFSS   STATUS,C
+00B3   0008           00292         RETURN
+00B4   01A2           00293         CLRF    D3
+00B5   3009           00294                 MOVLW  .9
+Message[305]: Using default destination of 1 (file).
+00B6   07A2           00295         ADDWF D3
+00B7   1503           00296         BSF STATUS,Z
+00B8   0008           00297         RETURN
+                      00298 
+                      00299 
+00B9                  00300 RESTAR_4        
+00B9   03A3           00301         DECF    D4,1
+00BA   0823           00302         MOVF    D4,0
+00BB   3E01           00303         ADDLW   .1
+00BC   1C03           00304                 BTFSS   STATUS,C
+00BD   0008           00305         RETURN
+00BE   01A3           00306         CLRF    D4
+00BF   3009           00307                 MOVLW  .9
+Message[305]: Using default destination of 1 (file).
+00C0   07A3           00308         ADDWF D4
+00C1   1503           00309         BSF STATUS,Z
+00C2   0008           00310         RETURN
+                      00311 
+00C3                  00312 CARGAR_AUX                         ;CARGAMOS LAS VARIABLES AUXILIARES, SE LIMPIO LA ESTACION DE TRABAJO 
+                            YA QUE DABA ERRORES
+00C3   0820           00313         MOVF D1,0                  ;MOVEMOS LOS DIGITOS A LA ESTACION DE TRABAJO Y LUEGO A SUS RESPECTIV
+                            OS AUXILIARES
+00C4   00A8           00314         MOVWF D1_AUX               ;Y TERMINAMOS LIMPIANDO LA ESTACION DE TRABAJO
+00C5   0103           00315         CLRW
+00C6   0821           00316         MOVF D2,0
+00C7   00A9           00317         MOVWF D2_AUX
+00C8   0103           00318         CLRW
+00C9   0822           00319         MOVF D3,0
+00CA   00AA           00320         MOVWF D3_AUX
+00CB   0103           00321         CLRW
+00CC   0823           00322         MOVF  D4,0
+00CD   00AB           00323         MOVWF D4_AUX
+00CE   0103           00324         CLRW
+00CF   0185           00325         CLRF    PORTA              ;LIMPIAMOS LOS DIGITOS PARA PODER SER USADOS NUEVAMENTE
+00D0   0186           00326                 CLRF    PORTB
+00D1   01A0           00327                 CLRF    D1
+00D2   01A1           00328                 CLRF    D2
+00D3   01A2           00329                 CLRF    D3
+00D4   01A3           00330                 CLRF    D4
+                      00331    
+00D5   0008           00332         RETURN                     ;FIN SUBRUTINA
+                      00333 
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00334 
+                      00335 
+00D6                  00336 CALCULO_1                         ;LLAMADA CALCULO, SUMA DIGITO A DIGITO SI HAY UN ACARREO SE LO PASA AL
+                             OTRO DIGITO
+                      00337         VERIFICAR D3,D3_AUX       ;MACRO PARA VERIFICAR SI  EL NUMERO ES MAYOR A 10 O MENOR
+                          M           
+00D6   082A               M          MOVF     D3_AUX,0             ;MOVEMOS EL AUXILIAR A LA ESTACION DE TRABAJO
+00D7   07A2               M          ADDWF    D3,1                 ;SE LO SUMAMOS AL DIGITO ENCARGADO DE MOSTRAR EL NUMERO
+00D8   300A               M          MOVLW    .10                  ;MOVEMOS UN 10 A LA ESTACION DE TRABAJO
+00D9   02A2               M          SUBWF    D3,1                 ;RESTAMOS EL VALOR DEL DIGITO-(10)
+00DA   1903           00338         BTFSC   STATUS,Z          ;DEPENDIENDO DEL RESULTADO QUE NOS DIO LA MACRO SEGUIMOS
+00DB   2???           00339         GOTO    ES_CERO_D3        ;SALTO CONDICIONALES 
+00DC   2???           00340         GOTO    NODA_CERO_D3
+00DD                  00341 ES_CERO_D3                        ;SI ES CERO
+00DD   2???           00342         CALL    SUMAR_4           ;SE PRODUJO UN ACARREO ENTONCES LE SUMAMOS UN UNO AL NUMERO SIGUIENTE
+00DE   01A2           00343         CLRF    D3                ;LIMPIAMOS EL DIGITO EN DONDE SE HIZO LA SUMA
+00DF   2???           00344         GOTO    FIN_MACRO         ;VAMOS AL FINAL DE LA MACRO
+00E0                  00345 NODA_CERO_D3
+00E0   1C03           00346         BTFSS   STATUS,C          ;SI NO DA CERO PREGUNTAMOS SI ES MAYOR A 10 O MENOR A 10 EL FLAG C NOS
+                             DIRA
+00E1   2???           00347         GOTO    MENOR_A10_D3
+00E2   2???           00348         GOTO    MAYOR_A10_D3
+00E3                  00349 MENOR_A10_D3                      ;SI ES MENOR A 10  
+00E3   300A           00350         MOVLW   .10               ;LE SUMAMOS 10 PARA QUE EL NUMERO VUELVA A SU VALOR ORIGINAL YA QUE LE
+                             RESTAMOS 10
+00E4   07A2           00351         ADDWF   D3,1              
+00E5   2???           00352         GOTO    FIN_MACRO                      
+00E6                  00353 MAYOR_A10_D3
+00E6   2???           00354         CALL    SUMAR_4           ;SI ES MAYOR A 10 EL DIGITO CONSERVA SUS VALORES Y HACEMOS EL CARREO D
+                            EL SIGUIENTE DIGITO
+00E7                  00355 FIN_MACRO 
+                      00356 
+                      00357         VERIFICAR D4,D4_AUX       ;ESTE PROCESO ES EL MISMO NO VERIFICAMOS SI DA CERO
+                          M           
+00E7   082B               M          MOVF     D4_AUX,0             ;MOVEMOS EL AUXILIAR A LA ESTACION DE TRABAJO
+00E8   07A3               M          ADDWF    D4,1                 ;SE LO SUMAMOS AL DIGITO ENCARGADO DE MOSTRAR EL NUMERO
+00E9   300A               M          MOVLW    .10                  ;MOVEMOS UN 10 A LA ESTACION DE TRABAJO
+00EA   02A3               M          SUBWF    D4,1                 ;RESTAMOS EL VALOR DEL DIGITO-(10)
+00EB   1C03           00358         BTFSS   STATUS,C
+00EC   2???           00359         GOTO    MENOR_A10_D4
+00ED   2???           00360         GOTO    MAYOR_A10_D4
+00EE                  00361 MENOR_A10_D4 
+00EE   300A           00362         MOVLW   .10
+00EF   07A3           00363         ADDWF   D4,1
+00F0   2???           00364         GOTO    FIN_MACRO_1                   
+00F1                  00365 MAYOR_A10_D4
+00F1   2???           00366         CALL    SUMAR_2
+00F2                  00367 FIN_MACRO_1
+                      00368 
+00F2   0008           00369         RETURN
+                      00370 
+                      00371 
+                      00372 
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00373 ;CONVERSOR A DISPLAY
+                      00374 ;RB1->SEG A
+                      00375 ;RB2->SEG B 
+                      00376 ;RB3->SEG C
+                      00377 ;RB4->SEG D
+                      00378 ;RB5->SEG E 
+                      00379 ;RB6->SEG F
+                      00380 ;RB7->SEG G
+                      00381 
+00F3                  00382 TAB_DISPLAY
+00F3   0782           00383                 ADDWF   PCL,1
+                      00384                 ;         GFEDCBA-
+00F4   347F           00385                 RETLW   b'01111111'     
+00F5   340D           00386                 RETLW   b'00001101'
+00F6   34B7           00387                 RETLW   b'10110111'
+00F7   349F           00388                 RETLW   b'10011111'
+00F8   34CD           00389                 RETLW   b'11001101'
+00F9   34DB           00390                 RETLW   b'11011011'
+00FA   34FB           00391                 RETLW   b'11111011'
+00FB   340F           00392                 RETLW   b'00001111'
+00FC   34FF           00393                 RETLW   b'11111111'
+00FD   34CF           00394                 RETLW   b'11001111'
+                      00395                 
+3F10                  00396                 END
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE 11
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADEN                              00000003
+APAGAR_DISPLAYS                   CLRF    PORTA
+AUX_STATUS                        00000025
+AUX_W                             00000024
+BOTONES                           0000004A
+BRGH                              00000002
+BTN_G1                            PORTA,6
+BTN_G2                            PORTA,7
+BTN_M                             PORTB,0
+BTN_R                             PORTA,4
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CALCULO_1                         000000D6
+CARGAR_AUX                        000000C3
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CONDICIONAL                       00000076
+CONFI                             0000002C
+CONT_AR                           00000026
+CONT_AR_2                         00000027
+CONT_CALC                         0000002C
+CREN                              00000004
+CSRC                              00000007
+CTRL_DISPLAY                      PORTA
+D1                                00000020
+D1_AUX                            00000028
+D2                                00000021
+D2_AUX                            00000029
+D3                                00000022
+D3_AUX                            0000002A
+D4                                00000023
+D4_AUX                            0000002B
+DC                                00000001
+DECRECER                          
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE 12
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+DEMORA_AR                         0000007B
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+ES_CERO_D3                        000000DD
+F                                 00000001
+FERR                              00000002
+FIN_MACRO                         000000E7
+FIN_MACRO_1                       000000F2
+FIN_T0I                           00000026
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+LOOP_AR                           0000007D
+LOOP_AR_2                         0000007F
+MAYOR_A10_D3                      000000E6
+MAYOR_A10_D4                      000000F1
+MENOR_A10_D3                      000000E3
+MENOR_A10_D4                      000000EE
+MOSTRAR                           
+MOSTRAR_D2                        00000015
+MOSTRAR_D3                        0000001B
+MOSTRAR_D4                        00000021
+NODA_CERO_D3                      000000E0
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIN_D1                            3
+PIN_D2                            2
+PIN_D3                            1
+PIN_D4                            0
+PIR1                              0000000C
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE 13
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+REINICIO                          00000044
+RESTAR_1                          0000009C
+RESTAR_2                          000000A6
+RESTAR_3                          000000AF
+RESTAR_4                          000000B9
+RETORNO_0                         0000005C
+RETORNO_1                         0000006D
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SALTO                             00000073
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+SUMAR                             
+SUMAR_1                           00000084
+SUMAR_2                           0000008A
+SUMAR_3                           00000090
+SUMAR_4                           00000096
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TAB_DISPLAY                       000000F3
+TMR0                              00000001
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE 14
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISB                             00000086
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VERIFICAR                         
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_CP_50                            00002BFF
+_CP_75                            000017FF
+_CP_ALL                           000003FF
+_CP_OFF                           00003FFF
+_DATA_CP_OFF                      00003FFF
+_DATA_CP_ON                       00003EFF
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_HS_OSC                           00003FEE
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+MPASM  5.31                            TP.ASM   11-10-2019  20:39:50         PAGE 15
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F628A                         00000001
+__DEBUG                           1
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :    13 reported,     0 suppressed
+
+

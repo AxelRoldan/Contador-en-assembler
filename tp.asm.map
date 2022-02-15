@@ -1,0 +1,100 @@
+MPLINK 4.31, Linker
+Linker Map File - Created Sun Nov 10 20:39:51 2019
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000002
+                   .cinit    romdata   0x000001    program   0x000004
+                   .org_1       code   0x000004    program   0x0001f4
+        .config_2007_TP.O       code   0x002007    program   0x000002
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000002      
+                            0x000004    0x0000fd      
+                            0x002007    0x002007      
+            254 out of 2183 program addresses used, program memory utilization is 11%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                  BOTONES   0x00004a    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                CALCULO_1   0x0000d6    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+               CARGAR_AUX   0x0000c3    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+              CONDICIONAL   0x000076    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                    CONFI   0x00002c    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                DEMORA_AR   0x00007b    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+               ES_CERO_D3   0x0000dd    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                FIN_MACRO   0x0000e7    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+              FIN_MACRO_1   0x0000f2    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  FIN_T0I   0x000026    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  LOOP_AR   0x00007d    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                LOOP_AR_2   0x00007f    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+             MAYOR_A10_D3   0x0000e6    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+             MAYOR_A10_D4   0x0000f1    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+             MENOR_A10_D3   0x0000e3    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+             MENOR_A10_D4   0x0000ee    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+               MOSTRAR_D2   0x000015    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+               MOSTRAR_D3   0x00001b    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+               MOSTRAR_D4   0x000021    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+             NODA_CERO_D3   0x0000e0    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                 REINICIO   0x000044    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                 RESTAR_1   0x00009c    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                 RESTAR_2   0x0000a6    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                 RESTAR_3   0x0000af    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                 RESTAR_4   0x0000b9    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                RETORNO_0   0x00005c    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                RETORNO_1   0x00006d    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                    SALTO   0x000073    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  SUMAR_1   0x000084    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  SUMAR_2   0x00008a    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  SUMAR_3   0x000090    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  SUMAR_4   0x000096    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+              TAB_DISPLAY   0x0000f3    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+               MOSTRAR_D2   0x000015    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+               MOSTRAR_D3   0x00001b    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+               MOSTRAR_D4   0x000021    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  FIN_T0I   0x000026    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                    CONFI   0x00002c    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                 REINICIO   0x000044    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  BOTONES   0x00004a    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                RETORNO_0   0x00005c    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                RETORNO_1   0x00006d    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                    SALTO   0x000073    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+              CONDICIONAL   0x000076    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                DEMORA_AR   0x00007b    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  LOOP_AR   0x00007d    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                LOOP_AR_2   0x00007f    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  SUMAR_1   0x000084    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  SUMAR_2   0x00008a    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  SUMAR_3   0x000090    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                  SUMAR_4   0x000096    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                 RESTAR_1   0x00009c    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                 RESTAR_2   0x0000a6    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                 RESTAR_3   0x0000af    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                 RESTAR_4   0x0000b9    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+               CARGAR_AUX   0x0000c3    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                CALCULO_1   0x0000d6    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+               ES_CERO_D3   0x0000dd    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+             NODA_CERO_D3   0x0000e0    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+             MENOR_A10_D3   0x0000e3    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+             MAYOR_A10_D3   0x0000e6    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+                FIN_MACRO   0x0000e7    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+             MENOR_A10_D4   0x0000ee    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+             MAYOR_A10_D4   0x0000f1    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+              FIN_MACRO_1   0x0000f2    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+              TAB_DISPLAY   0x0000f3    program     static C:\Users\Yoshi\Desktop\TP DISPLAY\tp.asm
+
+

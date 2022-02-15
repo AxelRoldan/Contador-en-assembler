@@ -1,0 +1,13 @@
+Message[301] C:\PROGRAM FILES (X86)\MICROCHIP\MPASM SUITE\P16F628.INC 35 : MESSAGE: (Processor-header file mismatch.  Verify selected processor.)
+Message[302] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 154 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 156 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 157 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 158 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 159 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 160 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 161 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 198 : Using default destination of 1 (file).
+Message[305] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 272 : Using default destination of 1 (file).
+Message[305] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 284 : Using default destination of 1 (file).
+Message[305] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 295 : Using default destination of 1 (file).
+Message[305] C:\USERS\YOSHI\DESKTOP\TP DISPLAY\TP.ASM 308 : Using default destination of 1 (file).
